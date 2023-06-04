@@ -90,18 +90,19 @@ class VKBot:
             self.write_msg(user_id, 'Ошибка получения токена')
 
     def find_user(self, user_id, offset):
+        info = self.get_user_info(user_id)
         url = f'https://api.vk.com/method/users.search'
-        age = self.get_user_info(user_id)[2]
+        age = info[2]
         params = {'access_token': user_token,
                   'v': '5.131',
-                  'sex': self.get_user_info(user_id)[1],
+                  'sex': info[1],
                   'age_from': age,
                   'age_to': age,
-                  'city': self.get_city_id(user_id, self.get_user_info(user_id)[0]),
+                  'city': self.get_city_id(user_id, info[0]),
                   'fields': 'is_closed, id',
                   'status': '1' or '6',
                   'offset': offset,
-                  'count': 30}
+                  'count': 5}
         res = requests.get(url, params=params)
         response = res.json()
         try:
@@ -142,16 +143,17 @@ class VKBot:
         if attachments is None:
             self.write_msg(user_id, 'Фотографий не найдено')
         else:
-            self.vk.method('messages.send',
-                           {'user_id': user_id, 'attachment': attachments, 'random_id': randrange(10 ** 7)})
+            self.vk.method('messages.send', {'user_id': user_id, 'attachment': attachments, 'random_id': randrange(10 ** 7)})
 
     def find_persons(self, user_id, offset, list_id):
         try:
-            insert_data_users(list_id[offset])
-            self.write_msg(user_id, 'vk.com/id' + str(list_id[offset]))
-            self.send_photos(user_id, self.get_popular_photos(list_id[offset]))
+            if check_users(list_id[offset], user_id) == False:
+                add_users(list_id[offset], user_id)
+                self.write_msg(user_id, 'vk.com/id'+str(list_id[offset]))
+                self.send_photos(user_id, self.get_popular_photos(list_id[offset]))
+            else:
+                return 'need_new_forms'
         except IndexError:
-            self.write_msg(user_id, 'Анкеты закончились')
             return 'need_new_forms'
 
 
