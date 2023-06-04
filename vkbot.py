@@ -12,7 +12,7 @@ for event in bot.longpoll.listen():
         elif request == 'начать поиск':
             sender_without_search(user_id, request)
             offset = 0
-            step_offset = 5
+            step_offset = 30
             list_id = bot.find_user(user_id, offset)
             bot.write_msg(event.user_id, f'Нашёл для тебя пару, жми на кнопку "Вперед"')
         elif request == 'вперед':
